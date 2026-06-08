@@ -1,61 +1,69 @@
-const cursor = document.querySelector(".cursor");
-const cursorRing = document.querySelector(".cursor-ring");
+const THEME_KEY = "portfolio-theme";
+const themeToggle = document.getElementById("themeToggle");
+
+function setTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch (_) {}
+  const meta = document.getElementById("theme-color-meta");
+  if (meta) meta.setAttribute("content", theme === "dark" ? "#1c1719" : "#fff8e7");
+  if (themeToggle) {
+    const dark = theme === "dark";
+    themeToggle.setAttribute("aria-pressed", String(dark));
+    themeToggle.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+  }
+}
+
+if (themeToggle) {
+  themeToggle.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme") || "light";
+    setTheme(current === "dark" ? "light" : "dark");
+  });
+  setTheme(document.documentElement.getAttribute("data-theme") || "light");
+}
+
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  try {
+    if (!localStorage.getItem(THEME_KEY)) setTheme(e.matches ? "dark" : "light");
+  } catch (_) {}
+});
+
+const header = document.getElementById("header");
 const menuBtn = document.querySelector(".menu-btn");
 const mobileMenu = document.querySelector(".mobile-menu");
+const navLinks = document.querySelectorAll(".nav a, .mobile-menu a");
 
-let mouseX = 0;
-let mouseY = 0;
-let ringX = 0;
-let ringY = 0;
-
-document.addEventListener("mousemove", (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  if (cursor) {
-    cursor.style.left = `${mouseX}px`;
-    cursor.style.top = `${mouseY}px`;
-  }
+window.addEventListener("scroll", () => {
+  header?.classList.toggle("scrolled", window.scrollY > 24);
 });
 
-function animateRing() {
-  ringX += (mouseX - ringX) * 0.15;
-  ringY += (mouseY - ringY) * 0.15;
-  if (cursorRing) {
-    cursorRing.style.left = `${ringX}px`;
-    cursorRing.style.top = `${ringY}px`;
-  }
-  requestAnimationFrame(animateRing);
-}
-animateRing();
-
-document.querySelectorAll("a, button, .magnetic").forEach((el) => {
-  el.addEventListener("mouseenter", () => document.body.classList.add("cursor-hover"));
-  el.addEventListener("mouseleave", () => document.body.classList.remove("cursor-hover"));
-});
-
-document.querySelectorAll(".magnetic").forEach((el) => {
-  el.addEventListener("mousemove", (e) => {
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    el.style.transform = `translate(${x * 0.12}px, ${y * 0.12}px)`;
-  });
-  el.addEventListener("mouseleave", () => {
-    el.style.transform = "";
-  });
+const sections = ["work", "experience", "about", "contact"];
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const id = entry.target.id;
+      document.querySelectorAll(".nav a").forEach((link) => {
+        link.classList.toggle("active", link.getAttribute("href") === `#${id}`);
+      });
+    });
+  },
+  { rootMargin: "-40% 0px -55% 0px" }
+);
+sections.forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) observer.observe(el);
 });
 
 const revealObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("visible");
-      }
+      if (entry.isIntersecting) entry.target.classList.add("visible");
     });
   },
-  { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+  { threshold: 0.1, rootMargin: "0px 0px -30px 0px" }
 );
-
 document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
 
 if (menuBtn && mobileMenu) {
@@ -90,4 +98,8 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     e.preventDefault();
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
+});
+
+window.addEventListener("load", () => {
+  document.querySelector(".page-loader")?.remove();
 });
