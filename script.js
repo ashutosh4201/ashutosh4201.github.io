@@ -7,7 +7,7 @@ function setTheme(theme) {
     localStorage.setItem(THEME_KEY, theme);
   } catch (_) {}
   const meta = document.getElementById("theme-color-meta");
-  if (meta) meta.setAttribute("content", theme === "dark" ? "#1c1719" : "#fff8e7");
+  if (meta) meta.setAttribute("content", theme === "dark" ? "#0f172a" : "#f1f5f9");
   if (themeToggle) {
     const dark = theme === "dark";
     themeToggle.setAttribute("aria-pressed", String(dark));
