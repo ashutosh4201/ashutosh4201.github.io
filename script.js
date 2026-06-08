@@ -32,7 +32,29 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 const header = document.getElementById("header");
 const menuBtn = document.querySelector(".menu-btn");
 const mobileMenu = document.querySelector(".mobile-menu");
-const navLinks = document.querySelectorAll(".nav a, .mobile-menu a");
+const mobileMenuClose = document.querySelector(".mobile-menu-close");
+
+function closeMobileMenu() {
+  if (!mobileMenu || !menuBtn) return;
+  mobileMenu.setAttribute("hidden", "");
+  menuBtn.setAttribute("aria-expanded", "false");
+  document.body.style.overflow = "";
+}
+
+function openMobileMenu() {
+  if (!mobileMenu || !menuBtn) return;
+  mobileMenu.removeAttribute("hidden");
+  menuBtn.setAttribute("aria-expanded", "true");
+  document.body.style.overflow = "hidden";
+}
+
+function scrollToSection(id) {
+  const target = document.querySelector(id);
+  if (!target) return;
+  const headerH = header?.offsetHeight ?? 76;
+  const top = target.getBoundingClientRect().top + window.scrollY - headerH - 8;
+  window.scrollTo({ top, behavior: "smooth" });
+}
 
 window.addEventListener("scroll", () => {
   header?.classList.toggle("scrolled", window.scrollY > 24);
@@ -44,7 +66,7 @@ const observer = new IntersectionObserver(
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       const id = entry.target.id;
-      document.querySelectorAll(".nav a").forEach((link) => {
+      document.querySelectorAll(".nav a, .mobile-menu nav a").forEach((link) => {
         link.classList.toggle("active", link.getAttribute("href") === `#${id}`);
       });
     });
@@ -68,24 +90,24 @@ document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el))
 
 if (menuBtn && mobileMenu) {
   menuBtn.addEventListener("click", () => {
-    const open = mobileMenu.hasAttribute("hidden");
-    if (open) {
-      mobileMenu.removeAttribute("hidden");
-      menuBtn.setAttribute("aria-expanded", "true");
-      document.body.style.overflow = "hidden";
-    } else {
-      mobileMenu.setAttribute("hidden", "");
-      menuBtn.setAttribute("aria-expanded", "false");
-      document.body.style.overflow = "";
-    }
+    if (mobileMenu.hasAttribute("hidden")) openMobileMenu();
+    else closeMobileMenu();
   });
+
+  mobileMenuClose?.addEventListener("click", closeMobileMenu);
 
   mobileMenu.querySelectorAll("a").forEach((link) => {
     link.addEventListener("click", () => {
-      mobileMenu.setAttribute("hidden", "");
-      menuBtn.setAttribute("aria-expanded", "false");
-      document.body.style.overflow = "";
+      if (link.getAttribute("href")?.startsWith("#")) closeMobileMenu();
     });
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !mobileMenu.hasAttribute("hidden")) closeMobileMenu();
+  });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 960) closeMobileMenu();
   });
 }
 
@@ -96,7 +118,7 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     const target = document.querySelector(id);
     if (!target) return;
     e.preventDefault();
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollToSection(id);
   });
 });
 
