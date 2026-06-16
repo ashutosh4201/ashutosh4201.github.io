@@ -975,6 +975,19 @@ img { max-width: 100%; display: block; }
   font-size: 0.9375rem;
   margin-bottom: 1rem;
 }
+.project-card-links {
+  margin-top: 0.25rem;
+}
+.project-card-links a {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.project-card-links a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
 .tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .tag-row span {
   font-size: 0.75rem;
